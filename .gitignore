@@ -1,0 +1,51 @@
+# 1. DATA & DATASET (Mencegah dataset besar & data sensitif ter-upload)
+data/*.csv
+data/*.xlsx
+data/*.parquet
+data/*.json
+data/*.zip
+data/raw/*
+data/processed/*
+
+# KECUALI file .gitkeep agar struktur folder kosong tetap tersimpan di GitHub
+!data/.gitkeep
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# 2. MODEL WEIGHTS & CHECKPOINTS (Ukuran ratusan MB - GB)
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.pth
+*.bin
+*.onnx
+*.safetensors
+models/*
+!models/.gitkeep
+checkpoints/
+results/
+runs/
+wandb/
+
+# 3. PYTHON & JUPYTER NOTEBOOK CACHE
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# 4. VIRTUAL ENVIRONMENT & KONFIGURASI LOKAL
+.env
+.venv
+env/
+venv/
+ENV/
+kaggle.json
+
+# 5. SISTEM OPERASI & IDE (VSCode / PyCharm / Mac / Windows)
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
