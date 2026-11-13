@@ -73,3 +73,9 @@ Proyek ini menggunakan dataset publik berbahasa Indonesia yang telah tervalidasi
 ├── .gitignore                         # Konfigurasi pengabaian file dataset dan bobot model besar
 ├── requirements.txt                   # Daftar pustaka Python (scikit-learn, xgboost, transformers, torch)
 └── README.md                          # Dokumentasi utama proyek
+
+---
+
+## DAFTAR PUSTAKA
+* Ibrohim, M. O., & Budi, I. (2019). Multi-label Hate Speech and Abusive Language Detection in Indonesian Twitter. In *Proceedings of the Third Workshop on Abusive Language Online* (pp. 46–57). Association for Computational Linguistics. https://doi.org/10.18653/v1/W19-3506
+* Wilie, B., Vincentio, K., Winata, G. I., Cahyawijaya, S., Li, X., Lim, Z. Y., ... & Purwarianti, A. (2020). IndoNLU: Benchmark and Resources for Evaluating Indonesian Natural Language Understanding. In *Proceedings of the 1st Conference of the Asia-Pacific Chapter of the Association for Computational Linguistics and the 10th International Joint Conference on Natural Language Processing* (pp. 843–857).
