@@ -1,4 +1,4 @@
-# PROPOSAL PROYEK MACHINE LEARNING (MINGGU 1)
+# PROPOSAL PROYEK MACHINE LEARNING
 **Judul:** Analisis Klasifikasi Ujaran Kebencian pada Informasi Pemerintahan Indonesia di Media Sosial Menggunakan Machine Learning dan Deep Learning  
 **Pengusul:** Ardhana Syah Hidayat (244311037) & Muhammad Adam Al-Kidri (244311050)
 
