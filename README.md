@@ -2,7 +2,7 @@
 
 ![SDG 16](https://img.shields.io/badge/UN_SDG-16.10_Peace,_Justice_&_Strong_Institutions-00689D?style=for-the-badge)
 ![Task](https://img.shields.io/badge/Task-Indonesian_NLP_Text_Classification-blue?style=for-the-badge)
-![Status](https://img.shields.io/badge/Checkpoint_1-Learning_Problem-success?style=for-the-badge)
+![Status](https://img.shields.io/badge/Checkpoint_2-Data_Preparation-success?style=for-the-badge)
 
 Repository ini berisi dokumentasi, alur prapemrosesan bahasa alami (*Natural Language Processing*), dan eksperimen pemodelan untuk mengklasifikasikan ujaran kebencian (*hate speech*) pada diskursus informasi pemerintahan Indonesia di media sosial. Proyek ini dikembangkan guna mendukung ruang demokrasi digital yang sehat dan inklusif sesuai target **Sustainable Development Goals (SDG) 16**.
 
@@ -16,9 +16,10 @@ Repository ini berisi dokumentasi, alur prapemrosesan bahasa alami (*Natural Lan
 ---
 
 ## Dokumen Deliverables
-Sesuai dengan ketentuan **[L] Learning Problem**, dokumen pengajuan ide dan proposal awal dapat diakses langsung melalui tautan berikut:
+Dokumen pengajuan ide, proposal awal, serta hasil *data understanding* dan *data preparation* dapat diakses langsung melalui tautan berikut:
 1. 📄 **[Lampiran B: Formulir Pengajuan Ide](./docs/pengajuan-ide.md)**
 2. 📑 **[Proposal Singkat (Bab 1 – Bab 3 Versi Awal)](./docs/learning-problem.md)**
+3. 📊 **[Bab 4 – 5: Data Understanding & Data Preparation](./docs/bab4-bab5-data-preparation.md)**
 
 ---
 
@@ -45,6 +46,16 @@ Proyek ini menggunakan dataset publik berbahasa Indonesia yang telah tervalidasi
 * **Ukuran & Proporsi:** **13.169 baris teks** berbahasa Indonesia (~42,2% *Hate Speech* dan ~57,8% *Non-Hate Speech*), dilengkapi kamus normalisasi kata tidak baku (`new_kamusalay.csv`).
 * **Strategi Pencegahan *Data Leakage*:** Pembagian data (*70% Train, 15% Validation, 15% Test*) dilakukan secara *stratified* sebelum proses ekstraksi fitur. Pembuatan kamus frekuensi kata (`TfidfVectorizer` / `Tokenizer`) hanya di-*fit* pada *Training Set*.
 
+**Hasil data preparation** (detail di [Bab 4–5](./docs/bab4-bab5-data-preparation.md)):
+
+| Split | Baris | Proporsi `HS=1` |
+| :--- | ---: | ---: |
+| Train | 9.105 | 42,26% |
+| Validation | 1.951 | 42,23% |
+| Test | 1.952 | 42,26% |
+
+Dari 13.169 baris mentah: 28 baris berlabel konflik dan 126 duplikat teks dibuang, lalu 7 dokumen kosong setelah *cleaning* dibuang → **13.008 baris** final (`random_state=42`). Test set disegel sampai Minggu 6.
+
 ---
 
 ## Rencana Arsitektur Tiga Model
@@ -60,17 +71,22 @@ Proyek ini menggunakan dataset publik berbahasa Indonesia yang telah tervalidasi
 ## Struktur Direktori Repository
 
 ```text
-├── data/                              # Penyimpanan dataset lokal (diabaikan oleh Git)
+├── data/                              # Dataset lokal (diabaikan oleh Git)
+│   ├── raw/                           # data.csv, new_kamusalay.csv, abusive.csv
+│   └── processed/                     # train.csv, val.csv, test.csv, split_manifest.json
 ├── docs/                              # Dokumentasi laporan dan pengajuan ide
-│   ├── lampiran_b_formulir_ide.md     # Deliverable 1: Formulir Lampiran B (Checkpoint 1)
-│   └── proposal_bab1_bab3.md          # Deliverable 2: Proposal Singkat Bab 1 - Bab 3
-├── notebooks/                         # Jupyter / Google Colab Notebooks eksperimen
-│   ├── 01_eda_and_text_cleaning.ipynb # Eksplorasi distribusi teks & normalisasi kamus alay
-│   ├── 02_baseline_logreg_tfidf.ipynb # Pelatihan model Baseline (TF-IDF + Logistic Regression)
-│   ├── 03_advanced_xgboost.ipynb      # Pelatihan model Advanced (Feature Engineering + XGBoost)
-│   └── 04_dl_indobert_finetuning.ipynb# Pelatihan model Deep Learning (Fine-Tuning IndoBERT)
-├── src/                               # Modul fungsi pembersihan teks dan evaluasi metrik
-├── .gitignore                         # Konfigurasi pengabaian file dataset dan bobot model besar
-├── requirements.txt                   # Daftar pustaka Python (scikit-learn, xgboost, transformers, torch)
+│   ├── pengajuan-ide.md               # Deliverable 1: Formulir Lampiran B
+│   ├── learning-problem.md            # Deliverable 2: Proposal Bab 1 - Bab 3
+│   └── bab4-bab5-data-preparation.md  # Deliverable 3: Data understanding & preparation
+├── notebooks/                         # Jupyter Notebook eksperimen
+│   ├── 01_learning_problem_eda.ipynb  # Bab 4: profil data, kondisi data, 5 visualisasi EDA
+│   ├── 02_data_preparation.ipynb      # Bab 5: cleaning, feature engineering, split, transformasi
+│   ├── 03_baseline_logreg_tfidf.ipynb # (Minggu 3) Baseline: TF-IDF + Logistic Regression
+│   ├── 04_advanced_xgboost.ipynb      # (Minggu 4) Advanced: SVD + fitur linguistik + XGBoost
+│   └── 05_dl_indobert_finetuning.ipynb# (Minggu 5) Deep Learning: Fine-tuning IndoBERT
+├── src/
+│   └── check_data_preparation.py      # Cek artefak split: baris, kebocoran teks, hash test set
+├── .gitignore                         # Mengabaikan dataset, model weights, dan cache
+├── requirements.txt                   # Daftar pustaka Python
 └── README.md                          # Dokumentasi utama proyek
 ```
