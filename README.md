@@ -15,8 +15,8 @@ Repository ini berisi dokumentasi, alur prapemrosesan bahasa alami (*Natural Lan
 
 ---
 
-## Dokumen Deliverables (Minggu 1 — Checkpoint 1)
-Sesuai dengan ketentuan **Minggu 1: [L] Learning Problem**, dokumen pengajuan ide dan proposal awal dapat diakses langsung melalui tautan berikut:
+## Dokumen Deliverables
+Sesuai dengan ketentuan **[L] Learning Problem**, dokumen pengajuan ide dan proposal awal dapat diakses langsung melalui tautan berikut:
 1. 📄 **[Lampiran B: Formulir Pengajuan Ide](./docs/pengajuan-ide.md)**
 2. 📑 **[Proposal Singkat (Bab 1 – Bab 3 Versi Awal)](./docs/learning-problem.md)**
 
