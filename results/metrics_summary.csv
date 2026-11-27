@@ -1,0 +1,6 @@
+model,macro_f1,precision_hs,recall_hs,f1_hs,roc_auc,pr_auc,training_seconds
+Baseline: Logistic Regression (Initial),0.8414,0.8167,0.8167,0.8167,0.9168,0.8794,1.1256
+Baseline Tuned: Logistic Regression (Minggu 13),0.8428,0.8119,0.8277,0.8197,0.9207,0.8842,1.35
+Advanced: XGBoost + SVD + Style (Initial),0.8222,0.8055,0.7791,0.7921,0.9034,0.8806,5.7047
+Advanced Tuned: XGBoost + SVD(200) + Style (Minggu 13),0.8324,0.8229,0.784,0.803,0.9106,0.89,10.0905
+Deep Learning: Bi-LSTM (Sanity Check - Epoch 3),0.8287,0.8012,0.8143,0.8077,0.9083,0.875,62.4

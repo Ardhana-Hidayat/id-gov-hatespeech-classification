@@ -1,0 +1,31 @@
+{
+    "model_name": "Advanced Tuned: XGBoost + SVD(200) + Style Features + Early Stopping",
+    "input_features": "TF-IDF -> TruncatedSVD(200) + 6 style features = 206 dense features",
+    "best_params": {
+        "subsample": 0.9,
+        "reg_lambda": 2.0,
+        "reg_alpha": 0.0,
+        "n_estimators": 500,
+        "min_child_weight": 1,
+        "max_depth": 8,
+        "learning_rate": 0.03,
+        "colsample_bytree": 0.8
+    },
+    "best_iteration": 327,
+    "cv_macro_f1": 0.8319,
+    "train_macro_f1": 0.9978,
+    "val_samples": 1951,
+    "macro_f1": 0.8324,
+    "precision_hs": 0.8229,
+    "recall_hs": 0.784,
+    "f1_hs": 0.803,
+    "roc_auc": 0.9106,
+    "pr_auc": 0.89,
+    "confusion_matrix": {
+        "tn": 988,
+        "fp": 139,
+        "fn": 178,
+        "tp": 646
+    },
+    "training_seconds": 10.0905
+}

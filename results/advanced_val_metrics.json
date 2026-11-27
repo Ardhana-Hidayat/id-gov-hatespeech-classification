@@ -1,0 +1,37 @@
+{
+    "model_name": "Advanced: XGBoost + SVD + Style Features",
+    "input_features": "TF-IDF -> TruncatedSVD(100) + 6 style features = 106 dense features",
+    "validation_samples": 1951,
+    "macro_f1": 0.8222,
+    "precision_hs": 0.8055,
+    "recall_hs": 0.7791,
+    "f1_hs": 0.7921,
+    "roc_auc": 0.9034,
+    "pr_auc": 0.8806,
+    "confusion_matrix": {
+        "tn": 972,
+        "fp": 155,
+        "fn": 182,
+        "tp": 642
+    },
+    "svd_components": 100,
+    "svd_explained_variance": 0.2345,
+    "scale_pos_weight": 1.3662,
+    "training_seconds": {
+        "tfidf": 1.0965,
+        "svd": 1.697,
+        "scaler": 0.0547,
+        "xgboost_fit": 2.8565,
+        "total_pipeline": 5.7047
+    },
+    "hyperparameters": {
+        "n_estimators": 100,
+        "max_depth": 6,
+        "learning_rate": 0.1,
+        "objective": "binary:logistic",
+        "eval_metric": "logloss",
+        "tree_method": "hist",
+        "random_state": 42,
+        "early_stopping": false
+    }
+}

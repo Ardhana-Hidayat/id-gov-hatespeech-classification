@@ -24,7 +24,10 @@ data/processed/*
 models/*
 !models/.gitkeep
 checkpoints/
-results/
+results/*
+!results/*.json
+!results/*.csv
+!results/.gitkeep
 runs/
 wandb/
 

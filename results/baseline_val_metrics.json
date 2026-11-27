@@ -1,0 +1,17 @@
+{
+    "model_name": "Baseline: Logistic Regression",
+    "input_features": "TF-IDF (unigram-bigram, 5000 features)",
+    "validation_samples": 1951,
+    "macro_f1": 0.8414,
+    "precision_hs": 0.8167,
+    "recall_hs": 0.8167,
+    "f1_hs": 0.8167,
+    "roc_auc": 0.9168,
+    "pr_auc": 0.8794,
+    "confusion_matrix": {
+        "tn": 976,
+        "fp": 151,
+        "fn": 151,
+        "tp": 673
+    }
+}
