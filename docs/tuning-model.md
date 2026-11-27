@@ -18,7 +18,7 @@
 - Model 3 berjalan end-to-end (training awal, belum final)
 
 **Checklist selesai:**
-- [ ] Tuning memakai validation/CV, bukan test set
-- [ ] Arsitektur DL memenuhi syarat minimum (MLP ≥2 hidden layers, CNN ≥2 conv layers, RNN ≥1 layer, dst.)
-- [ ] Training awal berjalan tanpa error dan loss menurun
-- [ ] `model.summary()` tersimpan
+- [x] Tuning memakai validation/CV, bukan test set
+- [x] Arsitektur DL memenuhi syarat minimum (MLP ≥2 hidden layers, CNN ≥2 conv layers, RNN ≥1 layer, dst.)
+- [x] Training awal berjalan tanpa error dan loss menurun
+- [x] `model.summary()` tersimpan

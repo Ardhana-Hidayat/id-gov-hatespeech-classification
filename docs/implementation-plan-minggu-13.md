@@ -155,10 +155,10 @@ Sesi 3: Integrasi Dokumentasi & Commit (Est. 1 jam)
 
 ## 5. Checklist Verifikasi Akhir (`docs/tuning-model.md`)
 
-- [ ] **No Test Leakage:** Seluruh *tuning* dan *early stopping* hanya memakai Train/CV dan `val.csv` (`test.csv` tetap disegel).
-- [ ] **Bab 6.2.4 Lengkap:** *Search space*, *best parameters*, dan tabel perbandingan skor sebelum vs sesudah tuning tercatat.
-- [ ] **Bab 6.2.5 Lengkap:** Kontrol *overfitting* dijelaskan dan dibuktikan lewat perbandingan skor *Train vs Validation* serta kurva *early stopping*.
-- [ ] **Syarat Arsitektur DL Terpenuhi:** IndoBERT (`12` layer encoder > syarat minimum) dijelaskan alasan, *inductive bias*, dan input *preprocessing*-nya (`max_length=128`).
-- [ ] **`model.summary()` Tersimpan:** Ringkasan struktur layer dan jumlah parameter tercatat jelas di output `04_deep_learning_design.ipynb`.
-- [ ] **Sanity Check Berhasil:** Training awal berjalan tanpa error dan grafik/log menunjukkan nilai *loss* menurun.
-- [ ] **Commit Lengkap:** Notebook `04_tuning_baseline_ml.ipynb`, `04_tuning_advanced_ml.ipynb`, dan `04_deep_learning_design.ipynb` ter-commit rapi ke Git.
+- [x] **No Test Leakage:** Seluruh *tuning* dan *early stopping* hanya memakai Train/CV dan `val.csv` (`test.csv` tetap disegel).
+- [x] **Bab 6.2.4 Lengkap:** *Search space*, *best parameters*, dan tabel perbandingan skor sebelum vs sesudah tuning tercatat.
+- [x] **Bab 6.2.5 Lengkap:** Kontrol *overfitting* dijelaskan dan dibuktikan lewat perbandingan skor *Train vs Validation* serta kurva *early stopping*.
+- [x] **Syarat Arsitektur DL Terpenuhi:** Bi-LSTM (`2` layer bidirectional RNN $\ge$ syarat minimum 1 layer) dijelaskan alasan, *inductive bias*, dan input *preprocessing*-nya (`MAX_LEN=80`).
+- [x] **`model.summary()` Tersimpan:** Ringkasan struktur layer dan jumlah parameter (2.005.378 parameter) tercatat jelas di output `04_deep_learning_design.ipynb`.
+- [x] **Sanity Check Berhasil:** Training awal berjalan tanpa error dan grafik/log menunjukkan nilai *loss* menurun (`0,5944` -> `0,3729`).
+- [x] **Commit Lengkap:** Notebook `04_tuning_baseline_ml.ipynb`, `04_tuning_advanced_ml.ipynb`, dan `04_deep_learning_design.ipynb` ter-commit rapi ke Git.

@@ -339,9 +339,9 @@ Lima contoh False Positive dan lima contoh False Negative ditampilkan di noteboo
 - **False Negative (hate speech lolos):** slur rasial dalam percakapan, berita tentang perundungan, hinaan berbasis gender, dan sindiran yang bergantung konteks. Kompresi SVD membuang detail leksikal yang sebenarnya penting, sedangkan pohon tidak memiliki mekanisme khusus untuk memahami *reported speech* atau sarkasme.
 - **Perbandingan dengan baseline:** jumlah FN advanced (182) lebih tinggi dari baseline (151), sedangkan FP hampir sama (155 vs 151). Ini mengonfirmasi bahwa penurunan performa terutama terjadi pada Recall kelas HS, bukan pada Precision.
 
-#### E. Kesimpulan Bab 6.2
+#### E. Kesimpulan Evaluasi Awal Bab 6.2
 
-Model advanced mencapai **Macro F1 = 82,22%**, **ROC-AUC = 90,34%**, dan **PR-AUC = 88,06%**. Pada konfigurasi awal Minggu 3, model ini **belum mengungguli baseline** pada Macro F1, Precision, Recall, dan ROC-AUC; satu-satunya metrik yang sedikit lebih baik adalah PR-AUC (+0,0012).
+Model advanced awal mencapai **Macro F1 = 82,22%**, **ROC-AUC = 90,34%**, dan **PR-AUC = 88,06%**. Pada konfigurasi awal Minggu 3, model ini **belum mengungguli baseline** pada Macro F1, Precision, Recall, dan ROC-AUC; satu-satunya metrik yang sedikit lebih baik adalah PR-AUC (+0,0012).
 
 Penyebab utama yang teridentifikasi:
 1. **Kompresi SVD terlalu agresif:** 100 komponen hanya menjelaskan 23,45% varians TF-IDF. Detail leksikal yang membedakan hate speech implisit dari kritik wajar banyak yang hilang.
@@ -349,7 +349,80 @@ Penyebab utama yang teridentifikasi:
 3. **Konfigurasi awal belum dituning:** 100 pohon tanpa *early stopping*, `max_depth=6`, dan `learning_rate=0.1` adalah titik awal, bukan hasil optimasi.
 4. **Ukuran data terbatas:** ~9 ribu baris cukup untuk model linear berdimensi tinggi, tetapi belum tentu cukup untuk ansambel pohon yang lebih kompleks.
 
-Feature fusion tetap memberi nilai: 6 fitur gaya penulisan menyumbang **8,83% gain** dan 3 di antaranya masuk 15 teratas. Namun, kontribusi ini belum cukup untuk menutupi kehilangan informasi akibat SVD. Untuk Minggu 4, kandidat perbaikan adalah: menambah komponen SVD (200–300), *early stopping* pada validation, tuning `max_depth`/`learning_rate`, mencoba XGBoost langsung pada TF-IDF *sparse* dengan `tree_method='hist'`, serta menyetel ambang keputusan untuk menyeimbangkan Precision dan Recall.
+---
+
+### 6.2.4 Eksperimen Representasi Fitur & Hyperparameter Tuning (Minggu 13)
+
+#### A. Eksperimen Representasi Fitur: Mengatasi Information Bottleneck
+Untuk mengatasi kelemahan *information bottleneck* pada SVD 100 komponen, dilakukan uji coba empiris terhadap dua skenario representasi pada Validation Set:
+1. **Skenario A:** Menambah dimensi laten `TruncatedSVD` menjadi 200 dan 300 komponen yang difusikan dengan 6 fitur gaya penulisan ternormalisasi (`StandardScaler`).
+2. **Skenario B:** Menggabungkan langsung matriks jarang TF-IDF 5.000 fitur dengan 6 fitur gaya penulisan (`scipy.sparse.hstack`, total 5.006 fitur) tanpa reduksi dimensi.
+
+| Skenario Representasi | Dimensi Fitur | Varians TF-IDF Terjelaskan | Macro F1 Validasi | Precision HS | Recall HS | ROC-AUC | Waktu Pelatihan |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Skenario A: SVD-100 + Gaya (Minggu 3)** | 106 | 23,45% | 0,8222 | 0,8055 | 0,7791 | 0,9034 | 1,43 detik |
+| **Skenario A: SVD-200 + Gaya (Terpilih)** | **206** | **34,12%** | **0,8234** | 0,8054 | **0,7828** | **0,9058** | 2,75 detik |
+| **Skenario A: SVD-300 + Gaya** | 306 | 41,61% | 0,8149 | 0,7989 | 0,7718 | 0,9012 | 4,99 detik |
+| **Skenario B: Sparse TF-IDF + Gaya** | 5.006 | 100,00% (Utuh) | 0,7989 | 0,7842 | 0,7427 | 0,8854 | 1,38 detik |
+
+*Temuan:* SVD-200 meningkatkan retensi varians leksikal menjadi **34,12%** dan menaikkan Macro F1 ke **0,8234**. Sebaliknya, SVD-300 mengalami *overfitting* pada komponen kebisingan frekuensi rendah (Macro F1 turun ke 0,8149), dan Sparse TF-IDF tanpa SVD menghasilkan fragmentasi split pada 5.000 kolom *sparse* (Macro F1 = 0,7989). Oleh karena itu, **SVD-200 + 6 Fitur Gaya Penulisan (206 fitur padat)** ditetapkan sebagai ruang fitur optimal untuk penalaan.
+
+#### B. Hyperparameter Tuning (`RandomizedSearchCV`, 5-Fold Stratified CV)
+Pencarian hiperparameter terstruktur dijalankan dengan `RandomizedSearchCV` pada 9.105 baris Training Set:
+
+| Hiperparameter | Ruang Pencarian (*Search Space*) | Nilai Terpilih (*Best Parameter*) | Alasan Pemilihan & Pengaruh |
+| :--- | :--- | :---: | :--- |
+| `n_estimators` | `[100, 200, 300, 500]` | **500** | Kapasitas pohon maksimum, dikontrol oleh *Early Stopping* |
+| `learning_rate` | `[0.03, 0.05, 0.1, 0.15]` | **0.03** | Laju pembelajaran kecil (*shrinkage*) untuk pembaruan gradien stabil |
+| `max_depth` | `[3, 4, 6, 8]` | **8** | Menangkap interaksi non-linear tingkat tinggi hingga orde 8 |
+| `min_child_weight` | `[1, 3, 5]` | **1** | Memungkinkan pembagian daun yang sensitif terhadap pola ujaran kebencian spesifik |
+| `subsample` | `[0.7, 0.8, 0.9, 1.0]` | **0.9** | Bagging 90% data latih per iterasi guna meredam varians |
+| `colsample_bytree` | `[0.6, 0.8, 1.0]` | **0.8** | Memilih 80% fitur per pohon untuk mencegah dominasi fitur SVD tertentu |
+| `reg_alpha` ($L_1$) | `[0.0, 0.1, 1.0]` | **0.0** | Regularisasi Lasso tidak diperlukan pada fitur laten padat |
+| `reg_lambda` ($L_2$) | `[1.0, 2.0, 5.0]` | **2.0** | Penalti Ridge diperkuat (dari 1.0 ke 2.0) guna membatasi bobot daun ekstrem |
+
+*Hasil Cross-Validation:* **Best CV Macro F1 = 0,8319** (naik signifikan dari konfigurasi awal).
+
+#### C. Perbandingan Performa Sebelum vs Sesudah Tuning (Validation Set, $N = 1.951$)
+
+| Metrik Evaluasi | Sebelum Tuning (Minggu 3) | Sesudah Tuning (Minggu 13) | Selisih ($\Delta$) | Status Ketercapaian Target |
+| :--- | :---: | :---: | :---: | :--- |
+| **Macro F1-Score** | 0,8222 | **0,8324** | **+0,0102 (+1,02%)** | Meningkat pesat melampaui 83% |
+| **Precision Kelas 1 (HS)** | 0,8055 | **0,8229** | **+0,0174 (+1,74%)** | Menurunkan False Positive sebesar 16 sampel |
+| **Recall Kelas 1 (HS)** | 0,7791 | **0,7840** | **+0,0049 (+0,49%)** | Ujaran kebencian tertangkap meningkat |
+| **F1-Score Kelas 1 (HS)** | 0,7921 | **0,8030** | **+0,0109 (+1,09%)** | Keseimbangan klasifikasi kelas positif menguat |
+| **ROC-AUC** | 0,9034 | **0,9106** | **+0,0072 (+0,72%)** | Pemisahan probabilitas makin tajam |
+| **PR-AUC** | 0,8806 | **0,8900** | **+0,0094 (+0,94%)** | **Melampaui Baseline (0,8842)** |
+
+**Perbandingan Matriks Kebingungan (*Confusion Matrix*):**
+- Sebelum Tuning: TN = 972, FP = 155, FN = 182, TP = 642
+- Sesudah Tuning: **TN = 988 (+16)**, **FP = 139 (-16)**, **FN = 178 (-4)**, **TP = 646 (+4)**
+- *Analisis Etika SDG 16:* Pengurangan 16 kasus False Positive secara signifikan melindungi masyarakat dari kesalahan kategorisasi kritik sah terhadap pemerintah menjadi ujaran kebencian.
+
+---
+
+### 6.2.5 Kontrol Overfitting & Analisis Kurva Belajar (Minggu 13)
+
+#### A. Implementasi Early Stopping
+Model dilatih ulang dengan parameter optimal menggunakan `early_stopping_rounds=20` yang memonitor fungsi kerugian `binary:logistic` (`logloss`) pada Validation Set.
+- **Hasil:** Pelatihan secara otomatis berhenti pada **iterasi ke-327** dari total 500 pohon yang dialokasikan.
+- **Mekanisme Proteksi:** Penghentian dini ini mengeliminasi 173 pohon terakhir yang berpotensi menghafal pola unik (*overfitting*) pada data latih tanpa memberikan peningkatan generalisasi.
+
+#### B. Analisis Kurva Belajar (*Learning Curve*)
+Pemantauan kurva kerugian per iterasi boosting menunjukkan:
+1. *Train Log-Loss* menurun secara mulus dan asimtotik dari `0,672` menuju `0,085`.
+2. *Validation Log-Loss* menurun tajam dari `0,674` hingga mencapai titik konvergensi terendah pada iterasi ke-327 (`0,387`), kemudian mendatar tanpa mengalami kenaikan (*divergence*).
+3. Bentuk kurva validasi yang stabil tanpa lonjakan membuktikan bahwa regularisasi $L_2$ (`reg_lambda=2.0`), subsampling baris (`0.9`), dan kolom (`0.8`) efektif menahan laju hafalan model.
+
+#### C. Analisis Gap Generalisasi (Train vs Validation)
+- **Train Macro F1:** `0,9978`
+- **Validation Macro F1:** `0,8324`
+- Gap generalisasi sebesar `0,1654` adalah karakteristik wajar pada algoritma pohon ensemble dengan `max_depth=8` pada data teks berdimensi padat. Yang terpenting, metrik validasi menunjukkan peningkatan konsisten di seluruh aspek (Macro F1, Precision, Recall, ROC-AUC, PR-AUC) tanpa degradasi performa pada data uji coba.
+
+#### D. Optimasi Decision Threshold ($\tau \in [0.30, 0.70]$)
+Untuk memenuhi komitmen SDG 16 terhadap perlindungan kebebasan berpendapat (Target 16.10):
+- Pada ambang standar $\tau = 0,50$: Macro F1 = `0,8324`, Precision HS = `0,8229`, Recall HS = `0,7840`.
+- Pada ambang optimal $\tau = 0,55$: Precision HS melonjak mencapai **`0,8525` (85,25%)**, memenuhi target etika proyek ($\ge 85\%$) dengan Macro F1 yang tetap tinggi (`0,8294`) dan Recall HS = `0,7403`.
 
 ---
 
@@ -383,3 +456,25 @@ Temuan ini bukan berarti XGBoost tidak layak digunakan. Ada tiga penjelasan yang
 - Mencoba XGBoost langsung pada matriks TF-IDF *sparse* dengan `tree_method='hist'` sebagai pembanding.
 - Menyetel ambang keputusan untuk menyeimbangkan Precision dan Recall sesuai prioritas etis (mencegah penyensoran kritik).
 - Membandingkan dengan IndoBERT (Model 3) yang diharapkan mampu menangkap konteks, negasi, dan sarkasme yang tidak tertangkap oleh model leksikal maupun SVD.
+
+---
+
+## BAB 6.4 — SINTESIS KOMPARATIF MODEL TEROPTIMASI (TUNED BASELINE VS TUNED ADVANCED — MINGGU 13)
+*(Disintesis bersama oleh Ardhana Syah Hidayat & Muhammad Adam Al-Kidri)*
+
+Setelah dilakukan *hyperparameter tuning* dan kontrol *overfitting* pada Modul Minggu 13, performa kedua model klasik mengalami peningkatan signifikan:
+
+| Metrik Evaluasi | Model 1: Baseline Tuned (LogReg + TF-IDF) | Model 2: Advanced Tuned (XGBoost + SVD-200 + Style) | Selisih ($\Delta$) | Analisis Keunggulan & Karakteristik |
+| :--- | :---: | :---: | :---: | :--- |
+| **Macro F1-Score** | **0,8428** | 0,8324 | **-0,0104** | Baseline sedikit unggul, namun jarak ketertinggalan Advanced terpangkas hampir 50% (dari $\Delta=-0,0192$ menjadi $\Delta=-0,0104$) |
+| **Precision (Kelas 1 - HS)** | 0,8119 | **0,8229** | **+0,0110** | **Advanced unggul:** Mampu menekan False Positive lebih baik (FP 139 vs 158) pada ambang default $\tau = 0,50$ |
+| **Recall (Kelas 1 - HS)** | **0,8277** | 0,7840 | **-0,0437** | Baseline lebih sensitif menangkap kata-kata kebencian leksikal langsung |
+| **F1-Score Kelas 1 (HS)** | **0,8197** | 0,8030 | **-0,0167** | Keduanya berada di atas 80% |
+| **ROC-AUC** | **0,9207** | 0,9106 | **-0,0101** | Keduanya melampaui target proyek ($\ge 88\%$) dengan separabilitas sangat tinggi |
+| **PR-AUC** | 0,8842 | **0,8900** | **+0,0058** | **Advanced unggul:** Kualitas kurva presisi-recall kelas ujaran kebencian lebih tinggi |
+| **Pencapaian Target SDG 16** | $\ge 85\%$ tercapai pada $\tau = 0,60$ (Precision 86,93%) | $\ge 85\%$ tercapai pada $\tau = 0,55$ (Precision 85,25%) | — | Kedua model mampu dikalibrasi untuk mencegah penyensoran kritik wajar terhadap pemerintah |
+
+**Kesimpulan Evaluasi Model Teroptimasi:**
+1. **Perbaikan Representasi SVD:** Peningkatan komponen dari 100 ke 200 terbukti berhasil melonggarkan *information bottleneck*, menaikkan varians TF-IDF terjelaskan dari 23,45% ke 34,12%.
+2. **Keberhasilan Kontrol Overfitting:** Penerapan *Early Stopping* (berhenti pada iterasi ke-327) bersama penalti $L_2$ (`reg_lambda=2.0`), subsampling baris (0.9), dan subsampling kolom (0.8) berhasil menaikkan performa validasi XGBoost sebesar **+1,02%** pada Macro F1 dan **+1,74%** pada Precision HS.
+3. **Komplementaritas Model:** Baseline unggul dalam menangkap sinyal leksikal frekuensi tinggi, sedangkan Advanced XGBoost unggul dalam mengombinasikan sinyal meta-linguistik (fitur gaya penulisan menyumbang ~7,85% gain) dan menghasilkan PR-AUC serta Precision HS yang lebih tinggi pada ambang default. Keduanya menjadi patokan kuat (*strong benchmarks*) untuk diuji terhadap arsitektur Deep Learning (Bi-LSTM / IndoBERT) pada tahap selanjutnya.
